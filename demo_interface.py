@@ -460,6 +460,28 @@ def demo_credentials():
 def register_demo_routes(main_app):
     """Register demo routes with the main Flask app"""
     
+    # Get the view functions from demo_app
+    demo_views = {
+        'demo_interface': demo_app.view_functions['demo_interface'],
+        'demo_test': demo_app.view_functions['demo_test'],
+        'demo_search': demo_app.view_functions['demo_search'],
+        'demo_examples': demo_app.view_functions['demo_examples'],
+        'demo_api_test': demo_app.view_functions['demo_api_test'],
+        'demo_status': demo_app.view_functions['demo_status'],
+        'demo_credentials': demo_app.view_functions['demo_credentials']
+    }
+    
+    # Register routes with unique endpoint names to avoid conflicts
+    main_app.add_url_rule('/demo', 'demo_interface_route', demo_views['demo_interface'], methods=['GET'])
+    main_app.add_url_rule('/demo/test', 'demo_test_route', demo_views['demo_test'], methods=['POST'])
+    main_app.add_url_rule('/demo/search', 'demo_search_route', demo_views['demo_search'], methods=['GET'])
+    main_app.add_url_rule('/demo/examples', 'demo_examples_route', demo_views['demo_examples'], methods=['GET'])
+    main_app.add_url_rule('/demo/api/test', 'demo_api_test_route', demo_views['demo_api_test'], methods=['GET'])
+    main_app.add_url_rule('/demo/status', 'demo_status_route', demo_views['demo_status'], methods=['GET'])
+    main_app.add_url_rule('/demo/credentials', 'demo_credentials_route', demo_views['demo_credentials'], methods=['GET'])
+
+    """Register demo routes with the main Flask app"""
+    
     @main_app.route('/demo')
     def demo_interface():
         return demo_app.view_functions['demo_interface']()

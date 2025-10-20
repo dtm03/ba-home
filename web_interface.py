@@ -202,9 +202,9 @@ CREDENTIALS_TEMPLATE = """
     
     <div class="card">
         <h2>Actions</h2>
-        <a href="{{ url_for('demo') }}" class="btn">Test LDAP Connection</a>
-        <a href="{{ url_for('status') }}" class="btn">System Status</a>
-        <a href="{{ url_for('logout') }}" class="btn btn-danger">Logout</a>
+        <a href="/demo" class="btn">Test LDAP Connection</a>
+        <a href="/status" class="btn">System Status</a>
+        <a href="/logout" class="btn btn-danger">Logout</a>
     </div>
 </body>
 </html>
@@ -257,10 +257,10 @@ STATUS_TEMPLATE = """
     
     <div class="card">
         <h2>Actions</h2>
-        <a href="{{ url_for('index') }}" class="btn">Back to Login</a>
+        <a href="/" class="btn">Back to Login</a>
         {% if session.get('authenticated') %}
-        <a href="{{ url_for('credentials') }}" class="btn">View Credentials</a>
-        <a href="{{ url_for('demo') }}" class="btn">Test LDAP</a>
+        <a href="/credentials" class="btn">View Credentials</a>
+        <a href="/demo" class="btn">Test LDAP</a>
         {% endif %}
     </div>
 </body>
@@ -480,11 +480,6 @@ def logout():
         session['info'] = 'Logged out'
         return redirect(url_for('index'))
 
-@app.route('/demo')
-def demo():
-    """Redirect to demo interface"""
-    return redirect(url_for('demo_interface'))
-
 @app.route('/api/validate', methods=['POST'])
 def api_validate():
     """API endpoint for LDAP credential validation"""
@@ -506,6 +501,58 @@ def api_validate():
     except Exception as e:
         logger.error(f"API validation error: {str(e)}")
         return jsonify({'error': 'Validation failed'}), 500
+
+@app.route('/demo-login', methods=['GET', 'POST'])
+def demo_login():
+    """Demo login bypass - TESTING ONLY"""
+    if request.method == 'GET':
+        return '''
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Demo Login</title>
+            <style>
+                body { font-family: Arial; max-width: 500px; margin: 100px auto; padding: 20px; }
+                .card { border: 1px solid #ddd; padding: 30px; border-radius: 8px; }
+                input { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 4px; }
+                button { background: #007bff; color: white; padding: 12px 30px; border: none; border-radius: 4px; cursor: pointer; width: 100%; }
+                button:hover { background: #0056b3; }
+                .warning { background: #fff3cd; padding: 10px; border-radius: 4px; margin-bottom: 20px; color: #856404; }
+            </style>
+        </head>
+        <body>
+            <div class="card">
+                <h2>🧪 Demo Login (Testing Only)</h2>
+                <div class="warning">
+                    ⚠️ This bypasses SAML authentication for testing purposes only.
+                </div>
+                <form method="post">
+                    <label>Username:</label>
+                    <input name="username" placeholder="Enter any username" value="testuser" required>
+                    <button type="submit">Generate Credentials</button>
+                </form>
+            </div>
+        </body>
+        </html>
+        '''
+    
+    # POST request - create session
+    username = request.form.get('username', 'testuser')
+    
+    # Create fake user info
+    user_info = {
+        'username': username,
+        'email': f'{username}@demo.local',
+        'display_name': username.title(),
+        'first_name': username.title(),
+        'last_name': 'Demo'
+    }
+    
+    session['authenticated'] = True
+    session['user_info'] = user_info
+    session['timestamp'] = time.time()
+    
+    return redirect(url_for('credentials'))
 
 if __name__ == '__main__':
     # Run the application
