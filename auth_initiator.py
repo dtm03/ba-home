@@ -51,43 +51,44 @@ class AuthInitiator:
             }
     
     def check_existing_session(self, request_data):
-        """
-        Check if user has an existing valid session
-        
-        Args:
-            request_data: Flask request data including session
+            """
+            Check if user has an existing valid session
             
-        Returns:
-            dict: Session validation result
-        """
-        try:
-            session = request_data.get('session', {})
-            
-            if 'saml_nameid' in session and 'saml_session_index' in session:
-                # Check if session is still valid
-                if self._is_session_valid(session):
-                    return {
-                        'success': True,
-                        'has_session': True,
-                        'user_info': session.get('user_info', {}),
-                        'session_data': {
-                            'nameid': session.get('saml_nameid'),
-                            'session_index': session.get('saml_session_index')
+            Args:
+                request_data: Flask request data including session
+                
+            Returns:
+                dict: Session validation result
+            """
+            try:
+                # Import session from Flask here to access it
+                from flask import session as flask_session
+                
+                if 'saml_nameid' in flask_session and 'saml_session_index' in flask_session:
+                    # Check if session is still valid
+                    if self._is_session_valid(flask_session):
+                        return {
+                            'success': True,
+                            'has_session': True,
+                            'user_info': flask_session.get('user_info', {}),
+                            'session_data': {
+                                'nameid': flask_session.get('saml_nameid'),
+                                'session_index': flask_session.get('saml_session_index')
+                            }
                         }
-                    }
-            
-            return {
-                'success': True,
-                'has_session': False
-            }
-            
-        except Exception as e:
-            logger.error(f"Error checking existing session: {str(e)}")
-            return {
-                'success': False,
-                'has_session': False,
-                'error': str(e)
-            }
+                
+                return {
+                    'success': True,
+                    'has_session': False
+                }
+                
+            except Exception as e:
+                logger.error(f"Error checking existing session: {str(e)}")
+                return {
+                    'success': False,
+                    'has_session': False,
+                    'error': str(e)
+                }
     
     def request_mfa_challenge(self, username, realm=None):
         """

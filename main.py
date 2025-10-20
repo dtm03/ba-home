@@ -356,25 +356,29 @@ class WorkflowOrchestrator:
             }
     
     def _initiate_authentication(self, request_data: Dict) -> Dict:
-        """Initiate new authentication flow"""
-        logger.info("Initiating new authentication flow")
-        
-        return_to = request_data.get('return_to') or request_data.get('get_data', {}).get('return_to')
-        
-        auth_result = self.auth_initiator.initiate_saml_auth(request_data, return_to=return_to)
-        
-        if auth_result.get('success'):
-            return {
-                'success': True,
-                'action': 'redirect_to_idp',
-                'redirect_url': auth_result.get('redirect_url')
-            }
-        else:
-            return {
-                'success': False,
-                'error': 'Failed to initiate authentication',
-                'details': auth_result.get('details')
-            }
+            """Initiate new authentication flow"""
+            logger.info("Initiating new authentication flow")
+            
+            # Handle Flask request object properly
+            if hasattr(request_data, 'args'):
+                return_to = request_data.args.get('return_to')
+            else:
+                return_to = request_data.get('return_to') if isinstance(request_data, dict) else None
+            
+            auth_result = self.auth_initiator.initiate_saml_auth(request_data, return_to=return_to)
+            
+            if auth_result.get('success'):
+                return {
+                    'success': True,
+                    'action': 'redirect_to_idp',
+                    'redirect_url': auth_result.get('redirect_url')
+                }
+            else:
+                return {
+                    'success': False,
+                    'error': 'Failed to initiate authentication',
+                    'details': auth_result.get('details')
+                }
 
 
 # Global orchestrator instance
