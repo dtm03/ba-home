@@ -1,12 +1,14 @@
-# SSL/TLS Certificates
-certs/*.pem
-certs/*.key
-certs/*.crt
-certs/*.pfx
-*.pem
-*.key
-*.crt
-*.pfx
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
 
 # Ignore all .log files in any directory
 *.log
@@ -21,21 +23,27 @@ certs/*.pfx
 .env.production
 .env.test
 
-# Python
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
-.Python
-*.so
+# SSL/TLS Certificates
+certs/*.pem
+certs/*.key
+certs/*.crt
+certs/*.pfx
+*.pem
+*.key
+*.crt
+*.pfx
 
-# Virtual environments
-venv/
-env/
-ENV/
+# Node
+node_modules/
+package-lock.json
+yarn.lock
 
 # IDE
 .vscode/
 .idea/
 *.swp
 *.swo
+
+# OS
+.DS_Store
+Thumbs.db
