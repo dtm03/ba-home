@@ -1,0 +1,95 @@
+version: "3.8"
+
+services:
+  saml-ldap-bridge:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: saml-ldap-bridge
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_ENV=development
+      - PYTHONPATH=/app
+      - DEBUG=true
+    env_file:
+      - .env
+    volumes:
+      - ./:/app:rw
+      - ./certs:/app/certs:ro
+      - ./logs:/app/logs
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - bridge-network
+
+  # Alternative: Pre-built Python image with dependencies
+  saml-ldap-bridge-alpine:
+    image: python:3.11-alpine
+    container_name: saml-ldap-bridge-alpine
+    working_dir: /app
+    command: sh -c "apk add --no-cache gcc musl-dev libffi-dev openssl-dev && pip install Flask ldap3 requests python-dotenv && python app.py"
+    ports:
+      - "5001:5000"
+    environment:
+      - FLASK_ENV=development
+      - PYTHONPATH=/app
+    env_file:
+      - .env
+    volumes:
+      - .:/app
+    networks:
+      - bridge-network
+    profiles:
+      - alpine
+
+  # Demo LDAP server for testing
+  demo-ldap:
+    image: osixia/openldap:1.5.0
+    container_name: demo-ldap-server
+    environment:
+      - LDAP_ORGANISATION=Demo Organization
+      - LDAP_DOMAIN=demo.local
+      - LDAP_ADMIN_PASSWORD=admin
+      - LDAP_CONFIG_PASSWORD=config
+      - LDAP_READONLY_USER=false
+    ports:
+      - "389:389"
+      - "636:636"
+    volumes:
+      - ldap-data:/var/lib/ldap
+      - ldap-config:/etc/ldap/slapd.d
+    restart: unless-stopped
+    networks:
+      - bridge-network
+    profiles:
+      - demo
+
+  # LDAP Admin interface
+  ldap-admin:
+    image: osixia/phpldapadmin:0.9.0
+    container_name: ldap-admin
+    environment:
+      - PHPLDAPADMIN_LDAP_HOSTS=demo-ldap
+      - PHPLDAPADMIN_HTTPS=false
+    ports:
+      - "8080:80"
+    depends_on:
+      - demo-ldap
+    networks:
+      - bridge-network
+    profiles:
+      - demo
+
+volumes:
+  ldap-data:
+  ldap-config:
+
+networks:
+  bridge-network:
+    driver: bridge

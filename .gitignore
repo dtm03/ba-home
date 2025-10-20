@@ -1,0 +1,13 @@
+# Ignore all .log files in any directory
+*.log
+
+# Ignore all .env files in any directory
+.env
+.env.*
+*.env
+
+# Common additional environment file patterns
+.env.local
+.env.development
+.env.production
+.env.test
