@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SAML-LDAP Bridge - MFA Required</title>
+  </head>
+  <body>
+    <h1>Multi-Factor Authentication Required</h1>
+
+    {% if error %}
+    <div class="error">{{ error }}</div>
+    {% endif %}
+
+    <div class="card">
+      <h2>Hello, {{ username }}!</h2>
+      <p>Please complete the multi-factor authentication to continue.</p>
+
+      {% if challenge_message %}
+      <div class="challenge">
+        <strong>Challenge:</strong> {{ challenge_message }}
+      </div>
+      {% endif %}
+
+      <form method="post" action="{{ url_for('mfa_verify') }}">
+        <input
+          type="hidden"
+          name="transaction_id"
+          value="{{ transaction_id }}"
+        />
+        <input type="hidden" name="username" value="{{ username }}" />
+
+        <div class="form-group">
+          <label for="mfa_code">Enter your MFA code:</label>
+          <input
+            type="text"
+            id="mfa_code"
+            name="mfa_code"
+            class="form-control"
+            required
+            autocomplete="off"
+          />
+        </div>
+
+        <button type="submit" class="btn">Verify</button>
+      </form>
+    </div>
+  </body>
+</html>
