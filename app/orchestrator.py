@@ -12,12 +12,12 @@ class WorkflowOrchestrator:
         """Return redirect URL for IdP login."""
         return {'success': True, 'redirect_url': '/login'}
 
-    def process_saml_response(self, saml_response):
+    def process_saml_response(self, request):
         """
-        Validate incoming SAML response and extract user info.
+        Validate incoming SAML response using the Flask `request` and extract user info.
         Returns dict with user_info and SAML session data.
         """
-        result = self.saml_token_validator.validate_saml_response(saml_response)
+        result = self.saml_token_validator.validate_saml_response(request)
         if not result.get('success'):
             return {'success': False, 'error': result.get('error', 'SAML validation failed')}
         user_info = result.get('user_info')

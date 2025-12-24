@@ -4,85 +4,19 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>SAML-LDAP Bridge - Demo Interface</title>
-    <style>
-      body {
-        font-family: Arial, sans-serif;
-        max-width: 1200px;
-        margin: 20px auto;
-        padding: 20px;
-        background: #f5f5f5;
-      }
-      .header {
-        background: #007bff;
-        color: white;
-        padding: 20px;
-        border-radius: 8px;
-        margin-bottom: 20px;
-      }
-      .card {
-        background: white;
-        border: 1px solid #ddd;
-        border-radius: 8px;
-        padding: 20px;
-        margin: 20px 0;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-      }
-      .btn {
-        background: #007bff;
-        color: white;
-        padding: 10px 20px;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-        text-decoration: none;
-        display: inline-block;
-        margin: 5px;
-      }
-      .btn:hover {
-        background: #0056b3;
-      }
-      .btn-success {
-        background: #28a745;
-      }
-      .btn-success:hover {
-        background: #218838;
-      }
-      .error {
-        color: #dc3545;
-        background: #f8d7da;
-        padding: 10px;
-        border-radius: 4px;
-        margin: 10px 0;
-      }
-      .form-group {
-        margin: 15px 0;
-      }
-      .form-control {
-        width: 100%;
-        padding: 8px;
-        border: 1px solid #ccc;
-        border-radius: 4px;
-        box-sizing: border-box;
-      }
-    </style>
   </head>
   <body>
     <div class="header">
-      <h1>🔗 SAML-LDAP Bridge Demo Interface</h1>
+      <h1>LDAP Login</h1>
       <p>
         Test LDAP connectivity using temporary credentials from SAML
         authentication
       </p>
     </div>
 
-    {% if message %}
-    <div class="{{ message_type }}">{{ message }}</div>
-    {% endif %}
-
     <div class="card">
-      <h2>🧪 Test LDAP Connection</h2>
       <form method="post" action="{{ url_for('demo_test') }}">
-        <div class="form-group">
+        <div class="form-group" style="margin-bottom: 10px">
           <label for="username">Username:</label>
           <input
             type="text"
@@ -93,7 +27,7 @@
             required
           />
         </div>
-        <div class="form-group">
+        <div class="form-group" style="margin-bottom: 10px">
           <label for="password">Password:</label>
           <input
             type="password"
@@ -103,7 +37,9 @@
             required
           />
         </div>
-        <button type="submit" class="btn btn-success">Test Connection</button>
+        <button type="submit" class="btn btn-success" style="margin-top: 5px">
+          Test Connection
+        </button>
       </form>
     </div>
   </body>

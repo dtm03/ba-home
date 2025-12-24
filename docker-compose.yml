@@ -16,4 +16,5 @@ services:
       - .env
     volumes:
       - ./app:/app:rw
+      - ./certs:/app/certs:ro
     restart: unless-stopped

@@ -14,30 +14,12 @@
     <div class="info">{{ info }}</div>
     {% endif %}
 
-    <div class="card">
-      <h2>Login</h2>
-      <p>
-        Click the button below to authenticate using your institutional
-        credentials.
-      </p>
-      <form method="post" action="{{ url_for('login') }}">
-        <button type="submit" class="btn">Login with SAML</button>
-      </form>
-    </div>
-
-    <div class="card">
-      <h3>System Information</h3>
-      <p>
-        <strong>SAML Identity Provider:</strong> {{ config.SAML_IDP_ENTITY_ID }}
-      </p>
-      <p>
-        <strong>eduMFA Integration:</strong> {{ 'Enabled' if
-        config.EDUMFA_API_KEY else 'Disabled' }}
-      </p>
-      <p>
-        <strong>LDAP Server:</strong> {{ config.LDAP_HOST }}:{{ config.LDAP_PORT
-        }}
-      </p>
-    </div>
+    <p>
+      Click the button below to authenticate with a passkey and receive your
+      temporary credentials
+    </p>
+    <form method="post" action="{{ url_for('login') }}">
+      <button type="submit" class="btn">Login with SAML</button>
+    </form>
   </body>
 </html>

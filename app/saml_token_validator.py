@@ -28,18 +28,15 @@ class TokenValidator:
             logger.error(f"SAML validation exception: {str(e)}")
             return {'success': False, 'error': str(e)}
 
-        
     def _prepare_flask_request(self, request):
-        logger.debug(f"Preparing Flask request for OneLogin: {request.path}")
         return {
             'https': 'on' if request.scheme == 'https' else 'off',
             'http_host': request.host,
-            'script_name': request.path,
-            'get_data': request.args,
-            'post_data': request.form
+            'script_name': '',
+            'get_data': request.args.copy(),
+            'post_data': request.form.copy()
         }
 
-        
     def _extract_user_info(self, nameid, attributes):
         user_info = {
             'nameid': nameid,

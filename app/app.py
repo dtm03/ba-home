@@ -59,7 +59,7 @@ def saml_login():
         from onelogin.saml2.auth import OneLogin_Saml2_Auth as Auth
         auth = Auth(orchestrator.saml_token_validator._prepare_flask_request(request),
                     orchestrator.saml_token_validator.saml_settings)
-        redirect_url = auth.login()
+        redirect_url= auth.login(force_authn=True)
         logger.info("SAML login redirect URL: %s", redirect_url)
         if not redirect_url:
             logger.error("Auth.login() returned no redirect URL")
@@ -75,8 +75,7 @@ def saml_login():
 def acs():
     """Assertion Consumer Service endpoint."""
     try:
-        saml_response = request.form
-        result = orchestrator.process_saml_response(saml_response)
+        result = orchestrator.process_saml_response(request)
 
         if not result.get('success'):
             session['error'] = result.get('error')
@@ -93,9 +92,38 @@ def acs():
         logger.error(f"SAML ACS error: {e}")
         session['error'] = 'SAML authentication failed'
         return redirect(url_for('index'))
+
+
+@app.route('/credentials')
+def credentials():
+    """Show temporary LDAP credentials for authenticated user."""
+    if not session.get('authenticated'):
+        session['error'] = 'Please authenticate first'
+        return redirect(url_for('index'))
+
+    user_info = session.get('user_info', {})
+    try:
+        credentials = orchestrator.ldap_credential_generator.generate_temporary_credentials(user_info)
+    except Exception as e:
+        logger.error(f"Failed to generate credentials: {e}")
+        session['error'] = 'Failed to generate credentials'
+        return redirect(url_for('index'))
+
+    return render_template('credentials.html', user_info=user_info, credentials=credentials)
+
+
+@app.route('/logout')
+def logout():
+    session.clear()
+    return redirect(url_for('index'))
+
 if __name__ == '__main__':
     logger.info("Starting SAML-LDAP Bridge application")
     try:
+        logger.info("CWD: %s", os.getcwd())
+        logger.info("Cert exists: %s", os.path.exists(Config.SSL_CERT_PATH))
+        logger.info("Key exists: %s", os.path.exists(Config.SSL_KEY_PATH))
+        logger.info("Cert path: %s", Config.SSL_CERT_PATH)
         if os.path.exists(Config.SSL_CERT_PATH) and os.path.exists(Config.SSL_KEY_PATH):
             logger.info("Starting with HTTPS on port 5000")
             app.run(host='0.0.0.0', port=5000,
