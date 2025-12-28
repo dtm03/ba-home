@@ -40,12 +40,42 @@ class TokenValidator:
     def _extract_user_info(self, nameid, attributes):
         user_info = {
             'nameid': nameid,
-            'email': None
+            'email': None,
+            'username': None,
+            'display_name': None
         }
 
-        for email_attr in ['mail', 'email', 'emailAddress']:
+        # Auth0 sends email as http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress
+        # Also support standard SAML attribute names
+        email_attr_names = [
+            'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress',
+            'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/email',
+            'mail',
+            'email',
+            'emailAddress'
+        ]
+        
+        for email_attr in email_attr_names:
             if email_attr in attributes and attributes[email_attr]:
                 user_info['email'] = attributes[email_attr][0] if isinstance(attributes[email_attr], list) else attributes[email_attr]
                 break
 
+        # Extract username from email (before @) if email exists
+        if user_info['email']:
+            user_info['username'] = user_info['email'].split('@')[0]
+        
+        # Try to get display name from various attributes
+        display_name_attrs = [
+            'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name',
+            'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/upn',
+            'displayName',
+            'cn'
+        ]
+        
+        for display_attr in display_name_attrs:
+            if display_attr in attributes and attributes[display_attr]:
+                user_info['display_name'] = attributes[display_attr][0] if isinstance(attributes[display_attr], list) else attributes[display_attr]
+                break
+
+        logger.debug(f"Extracted user_info: email={user_info['email']}, username={user_info['username']}, display_name={user_info['display_name']}")
         return user_info
