@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
   saml-ldap-bridge:
     build:
@@ -11,85 +9,43 @@ services:
     environment:
       - FLASK_ENV=development
       - PYTHONPATH=/app
-      - DEBUG=true
-    env_file:
-      - .env
+      - DEBUG
+      - SECRET_KEY
+      - SAML_SP_ENTITY_ID
+      - SAML_SP_ACS_URL
+      - SAML_SP_SLS_URL
+      - SAML_IDP_ENTITY_ID
+      - SAML_IDP_SSO_URL
+      - SAML_IDP_X509_CERT
+      - LDAP_HOST
+      - LDAP_PORT
+      - LDAP_BASE_DN
+      - LDAP_BIND_DN
+      - LDAP_BIND_PASSWORD
+      - TEMP_CREDENTIAL_CLEANUP_INTERVAL
+      - TEMP_CREDENTIAL_EXPIRY
+      - SSL_CERT_PATH
+      - SSL_KEY_PATH
     volumes:
-      - ./:/app:rw
-      - ./certs:/app/certs:ro
-      - ./logs:/app/logs
+      - ./app:/app:rw
     restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
-    networks:
-      - bridge-network
-
-  # Alternative: Pre-built Python image with dependencies
-  saml-ldap-bridge-alpine:
-    image: python:3.11-alpine
-    container_name: saml-ldap-bridge-alpine
-    working_dir: /app
-    command: sh -c "apk add --no-cache gcc musl-dev libffi-dev openssl-dev && pip install Flask ldap3 requests python-dotenv && python app.py"
-    ports:
-      - "5001:5000"
-    environment:
-      - FLASK_ENV=development
-      - PYTHONPATH=/app
-    env_file:
-      - .env
-    volumes:
-      - .:/app
-    networks:
-      - bridge-network
-    profiles:
-      - alpine
-
-  # Demo LDAP server for testing
-  demo-ldap:
+  openldap:
     image: osixia/openldap:1.5.0
-    container_name: demo-ldap-server
+    container_name: openldap
     environment:
-      - LDAP_ORGANISATION=Demo Organization
-      - LDAP_DOMAIN=demo.local
+      - CONTAINER_LOG_LEVEL=5
+      - LDAP_ORGANISATION=Example Org
+      - LDAP_DOMAIN=outlook.de
       - LDAP_ADMIN_PASSWORD=admin
-      - LDAP_CONFIG_PASSWORD=config
-      - LDAP_READONLY_USER=false
+      - LDAP_TLS=false
+      - LDAP_REMOVE_CONFIG_AFTER_SETUP=false # Keeps config files intact
     ports:
       - "389:389"
-      - "636:636"
     volumes:
       - ldap-data:/var/lib/ldap
       - ldap-config:/etc/ldap/slapd.d
     restart: unless-stopped
-    networks:
-      - bridge-network
-    profiles:
-      - demo
-
-  # LDAP Admin interface
-  ldap-admin:
-    image: osixia/phpldapadmin:0.9.0
-    container_name: ldap-admin
-    environment:
-      - PHPLDAPADMIN_LDAP_HOSTS=demo-ldap
-      - PHPLDAPADMIN_HTTPS=false
-    ports:
-      - "8080:80"
-    depends_on:
-      - demo-ldap
-    networks:
-      - bridge-network
-    profiles:
-      - demo
 
 volumes:
   ldap-data:
   ldap-config:
-
-networks:
-  bridge-network:
-    driver: bridge

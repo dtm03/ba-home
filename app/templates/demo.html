@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LDAP Test Login</title>
+  </head>
+  <body>
+    <h1>LDAP Test Login</h1>
+    <p>Test your temporary credentials for {{ username }} ({{ email }})</p>
+
+    {% if demo_result %} {% if demo_result.success %}
+    <p>{{ demo_result.message }}</p>
+    {% else %}
+    <p>{{ demo_result.error }}</p>
+    {% endif %} {% endif %}
+
+    <form method="post" action="{{ url_for('demo_test') }}">
+      <div style="margin-bottom: 12px">
+        <input
+          type="text"
+          id="username"
+          name="username"
+          placeholder="Enter username"
+          required
+        />
+      </div>
+
+      <div style="margin-bottom: 12px">
+        <input
+          type="password"
+          id="password"
+          name="password"
+          placeholder="Enter password"
+          required
+        />
+      </div>
+
+      <div>
+        <button type="submit">Login</button>
+        <a href="/credentials">Back to Credentials</a>
+        <a href="/logout">Logout</a>
+      </div>
+    </form>
+  </body>
+</html>
