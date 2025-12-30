@@ -27,17 +27,20 @@ services:
       - ./certs:/app/certs:ro
     restart: unless-stopped
   openldap:
-    image: cleanstart/openldap:latest
+    image: osixia/openldap:1.5.0
     container_name: openldap
     environment:
+      - CONTAINER_LOG_LEVEL=5
       - LDAP_ORGANISATION=Example Org
       - LDAP_DOMAIN=outlook.de
       - LDAP_ADMIN_PASSWORD=admin
-      - LDAP_TLS_ENABLED=false
+      - LDAP_TLS=false
+      - LDAP_REMOVE_CONFIG_AFTER_SETUP=false # Keeps config files intact
     ports:
       - "389:389"
     volumes:
-      - ./app/ldap_init/custom.ldif:/container/service/slapd/assets/config/bootstrap/ldif/custom.ldif
+      # Ensure this source path exists and is a file, not a folder
+      - ./app/ldap_init/custom.ldif:/container/service/slapd/assets/config/bootstrap/ldif/custom/custom.ldif:rw
       - ldap-data:/var/lib/ldap
       - ldap-config:/etc/ldap/slapd.d
     restart: unless-stopped
