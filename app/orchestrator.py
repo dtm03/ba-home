@@ -1,40 +1,61 @@
+import logging
+from onelogin.saml2.auth import OneLogin_Saml2_Auth as Auth
 from saml_token_validator import TokenValidator
-from config import Config
 from ldap_credential_generator import CredentialGenerator
+from ldap3 import Server, Connection, ALL
+from config import Config
+
+logger = logging.getLogger(__name__)
 
 class WorkflowOrchestrator:
-    def __init__(self, ldap_credential_generator, auth_handler):
-        self.ldap_credential_generator = ldap_credential_generator
-        self.auth_handler = auth_handler
-        self.saml_token_validator = TokenValidator()
+    def __init__(self):
+        self.ldap_gen = CredentialGenerator()
+        self.validator = TokenValidator()
 
-    def initiate_login(self):
-        """Return redirect URL for IdP login."""
-        return {'success': True, 'redirect_url': '/login'}
+    def get_login_url(self, request):
+        req = self.validator._prepare_flask_request(request)
+        auth = Auth(req, self.validator.saml_settings)
+        return auth.login(force_authn=True)
 
     def process_saml_response(self, request):
-        """
-        Validate incoming SAML response using the Flask `request` and extract user info.
-        Returns dict with user_info and SAML session data.
-        """
-        result = self.saml_token_validator.validate_saml_response(request)
-        if not result.get('success'):
-            return {'success': False, 'error': result.get('error', 'SAML validation failed')}
-        user_info = result.get('user_info')
-        # TokenValidator returns user_info which includes 'nameid' when present
-        saml_data = {
-            'nameid': user_info.get('nameid') if isinstance(user_info, dict) else None,
-            'session_index': None
-        }
-        return {'success': True, 'user_info': user_info, 'saml_data': saml_data}
+        result = self.validator.validate_saml_response(request)
+        if result['success']:
+            result['saml_data'] = {
+                'nameid': result['user_info'].get('nameid'),
+                'session_index': None 
+            }
+        return result
 
-# Factory to create orchestrator
-def get_orchestrator():
-    # AuthHandler implementation is not present in this repo; pass None for now.
-    ldap_gen = CredentialGenerator()
-    auth_handler = None
-    return WorkflowOrchestrator(ldap_gen, auth_handler)
+    def get_ldap_credentials(self, user_info):
+        return self.ldap_gen.generate_temporary_credentials(user_info)
 
+    def test_ldap_login(self, username, password):
+        try:
+            server = Server(Config.LDAP_HOST, port=Config.LDAP_PORT, get_info=ALL)
+            bind_dn = f"uid={username},ou=people,{Config.LDAP_BASE_DN}"
+            
+            conn = Connection(server, user=bind_dn, password=password, auto_bind=True)
+            conn.unbind()
+            return {'success': True, 'message': f'Successfully signed in as {username}!'}
+        except Exception as e:
+            logger.error(f"LDAP-Test failed: {e}")
+            return {'success': False, 'error': str(e)}
 
+    def change_ldap_password(self, mail, new_password):
+        try:
+            server = Server(Config.LDAP_HOST, port=Config.LDAP_PORT, get_info=ALL)
+            conn = Connection(server, user=Config.LDAP_BIND_DN, 
+                              password=Config.LDAP_BIND_PASSWORD, auto_bind=True)
+            
+            conn.search(Config.LDAP_BASE_DN, f"(mail={mail})", attributes=['dn'])
+            if not conn.entries:
+                return {'success': False, 'error': 'User not found'}
+            
+            user_dn = conn.entries[0].entry_dn
+            result = conn.extend.standard.modify_password(user_dn, new_password)
+            conn.unbind()
+            return {'success': result}
+        except Exception as e:
+            return {'success': False, 'error': str(e)}
 
-orchestrator = get_orchestrator()
+orchestrator = WorkflowOrchestrator()

@@ -7,24 +7,27 @@ services:
     ports:
       - "5000:5000"
     environment:
-      FLASK_ENV: development
-      PYTHONPATH: /app
-      DEBUG: "true"
-      SECRET_KEY: demo-secret-key-for-testing-only
-      SAML_SP_ENTITY_ID: https://localhost:5000/saml-ldap-bridge
-      SAML_SP_ACS_URL: https://localhost:5000/acs
-      SAML_SP_SLS_URL: https://localhost:5000/sls
-      SAML_IDP_ENTITY_ID: urn:dev-pt441aecux8yngbp.us.auth0.com
-      SAML_IDP_SSO_URL: https://dev-pt441aecux8yngbp.us.auth0.com/samlp/gqeMqEU7naQSpxnlj3xevdtvA828iRQx
-      SAML_IDP_SLO_URL: https://dev-pt441aecux8yngbp.us.auth0.com/samlp/gqeMqEU7naQSpxnlj3xevdtvA828iRQx
-      SAML_IDP_X509_CERT: MIIDHTCCAgWgAwIBAgIJARy7K/QJgqJYMA0GCSqGSIb3DQEBCwUAMCwxKjAoBgNVBAMTIWRldi1wdDQ0MWFlY3V4OHluZ2JwLnVzLmF1dGgwLmNvbTAeFw0yNTEwMjAxMDUzMTlaFw0zOTA2MjkxMDUzMTlaMCwxKjAoBgNVBAMTIWRldi1wdDQ0MWFlY3V4OHluZ2JwLnVzLmF1dGgwLmNvbTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAOp4rpRStFn43WYRo2Cro/z7TUlACwsw3uOLHyp1jyrMqFpUrMEhGezUNZ7bWqqzLqUu2OFzAS7lIehjyDu0mdJYc1f22pe5ieXsMC5EQ2W+gmmbmGr6NZ3g0tHI5XIPLb+W7UuxNnNC9ZyvqRwFl9BFnG8SIdDl60vcILJoP6tkHzOu8vvOeGyhr6e4WKDaLkXp5RWGi54UW9F+wKjFbbs1915JeBmJoITCtQAAR3pjU7QFnhAnseafmD1+6rOE6QEnj9f3pmZ4kDlfAnD05g4aGDb1dDC48FoBZTYe1Z//kUQhGCES0nQqOCGkPCDvP+1WhwRFQDwNcUxFa1Qob48CAwEAAaNCMEAwDwYDVR0TAQH/BAUwAwEB/zAdBgNVHQ4EFgQUvciXj1AGFaIcIU+PA5yAdA0cHecwDgYDVR0PAQH/BAQDAgKEMA0GCSqGSIb3DQEBCwUAA4IBAQAOg4bJqoWzWTfqSNphY4iVY4WhH1A691Idn9cSlzAjYB4joW1VT0QGu6BxCxyVW/swlHI4d3DNZU0Ppq4xsBt0WDK0fsmSSDPhDhviVFeBCT9qc8TqNgR5X8szjInGnT/7B8HgdUah7RwPcRkvQvkAFavISuqQkYZ8bmDitpB/39JldNzXeNih6MfYNrRrQ2gNa4L4Jm0ltD/nVSQ60nUSUucb+4MRyxZZ6LRykTNA1evz86elJS4C5+XGyQPd6xLyip8Zz/x+bFk/V/uEG/BFgfOB6JT17jmHIhq8UuvkzDkUiAAMtE1qWufXD8/L2VpmqGzll5uky0n7ThbBellb
-      LDAP_HOST: openldap
-      LDAP_BASE_DN: dc=outlook,dc=de
-      LDAP_BIND_DN: cn=admin,dc=outlook,dc=de
-      LDAP_BIND_PASSWORD: admin
+      - FLASK_ENV=development
+      - PYTHONPATH=/app
+      - DEBUG
+      - SECRET_KEY
+      - SAML_SP_ENTITY_ID
+      - SAML_SP_ACS_URL
+      - SAML_SP_SLS_URL
+      - SAML_IDP_ENTITY_ID
+      - SAML_IDP_SSO_URL
+      - SAML_IDP_X509_CERT
+      - LDAP_HOST
+      - LDAP_PORT
+      - LDAP_BASE_DN
+      - LDAP_BIND_DN
+      - LDAP_BIND_PASSWORD
+      - TEMP_CREDENTIAL_CLEANUP_INTERVAL
+      - TEMP_CREDENTIAL_EXPIRY
+      - SSL_CERT_PATH
+      - SSL_KEY_PATH
     volumes:
       - ./app:/app:rw
-      - ./certs:/app/certs:ro
     restart: unless-stopped
   openldap:
     image: osixia/openldap:1.5.0
@@ -39,8 +42,6 @@ services:
     ports:
       - "389:389"
     volumes:
-      # Ensure this source path exists and is a file, not a folder
-      - ./app/ldap_init/custom.ldif:/container/service/slapd/assets/config/bootstrap/ldif/custom/custom.ldif:rw
       - ldap-data:/var/lib/ldap
       - ldap-config:/etc/ldap/slapd.d
     restart: unless-stopped
