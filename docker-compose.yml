@@ -38,12 +38,13 @@ services:
       - LDAP_DOMAIN=outlook.de
       - LDAP_ADMIN_PASSWORD=admin
       - LDAP_TLS=false
-      - LDAP_REMOVE_CONFIG_AFTER_SETUP=false # Keeps config files intact
+      - LDAP_REMOVE_CONFIG_AFTER_SETUP=false
     ports:
       - "389:389"
     volumes:
       - ldap-data:/var/lib/ldap
       - ldap-config:/etc/ldap/slapd.d
+      - ./ldap/bootstrap:/container/service/slapd/assets/config/bootstrap/ldif/custom
     restart: unless-stopped
 
 volumes:

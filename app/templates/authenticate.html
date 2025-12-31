@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SAML-LDAP Bridge - Login</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='style.css') }}"
+    />
+  </head>
+  <body>
+    <div class="container">
+      <h1>SAML-LDAP Bridge</h1>
+
+      {% if error %}
+      <div class="error">{{ error }}</div>
+      {% endif %} {% if info %}
+      <div class="info">{{ info }}</div>
+      {% endif %}
+
+      <p>
+        Click the button below to authenticate with a passkey and receive your
+        temporary credentials
+      </p>
+
+      <form method="post" action="{{ url_for('authenticate') }}">
+        <button type="submit">Authenticate Now</button>
+      </form>
+    </div>
+  </body>
+</html>

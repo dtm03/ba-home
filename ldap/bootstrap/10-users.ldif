@@ -1,0 +1,7 @@
+dn: uid=d.ts,dc=outlook,dc=de
+objectClass: inetOrgPerson
+objectClass: top
+uid: d.ts
+cn: d.ts
+sn: d.ts
+mail: d.ts@outlook.de

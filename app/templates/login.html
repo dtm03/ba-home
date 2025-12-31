@@ -3,30 +3,38 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>SAML-LDAP Bridge - Login</title>
-    <link
-      rel="stylesheet"
-      href="{{ url_for('static', filename='style.css') }}"
-    />
+    <title>LDAP Test Login</title>
+    <link rel="stylesheet" href="/static/style.css" />
   </head>
   <body>
     <div class="container">
-      <h1>SAML-LDAP Bridge</h1>
+      <h1>LDAP Test Login</h1>
+      <p>Test your credentials for <strong>{{ username }}</strong></p>
 
-      {% if error %}
-      <div class="error">{{ error }}</div>
-      {% endif %} {% if info %}
-      <div class="info">{{ info }}</div>
+      {% if login_result %}
+      <div class="{{ 'success' if login_result.success else 'error' }}">
+        {{ login_result.message or login_result.error }}
+      </div>
       {% endif %}
 
-      <p>
-        Click the button below to authenticate with a passkey and receive your
-        temporary credentials
-      </p>
-
       <form method="post" action="{{ url_for('login') }}">
-        <button type="submit">Authenticate Now</button>
+        <input type="text" name="username" placeholder="Username" required />
+        <input
+          type="password"
+          name="password"
+          placeholder="Password"
+          required
+        />
+
+        <button type="submit">Login</button>
       </form>
+
+      <div style="margin-top: 15px">
+        <a href="/credentials" class="btn" style="background-color: #627d98"
+          >Back</a
+        >
+        <a href="/logout" class="btn btn-danger">Reauthenticate</a>
+      </div>
     </div>
   </body>
 </html>

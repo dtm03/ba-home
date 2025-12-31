@@ -25,9 +25,9 @@ app.config.update(
 def index():
     if session.get('authenticated'):
         return redirect(url_for('credentials'))
-    return render_template('login.html', error=session.pop('error', None))
+    return render_template('authenticate.html', error=session.pop('error', None))
 
-@app.route('/login', methods=['GET', 'POST'], endpoint='login')
+@app.route('/authenticate', methods=['GET', 'POST'], endpoint='authenticate')
 def saml_login():
     try:
         return redirect(orchestrator.get_login_url(request))
@@ -61,32 +61,21 @@ def credentials():
                            user_info=session['user_info'], 
                            credentials=creds)
 
-@app.route('/demo')
-def demo():
+@app.route('/login', methods=['GET', 'POST'])
+def login():
     if not session.get('authenticated'):
         return redirect(url_for('index'))
     
-    return render_template('demo.html', 
-                           username=session['user_info'].get('username'),
-                           demo_result=session.pop('demo_result', None))
-
-@app.route('/demo_test', methods=['POST'])
-def demo_test():
-    if not session.get('authenticated'):
-        return redirect(url_for('index')), 403
-        
-    username = request.form.get('username')
-    password = request.form.get('password')
+    login_result = None
     
-    res = orchestrator.test_ldap_login(username, password)
-    session['demo_result'] = res
-    return redirect(url_for('demo'))
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+        login_result = orchestrator.test_ldap_login(username, password)
 
-@app.route('/api/ldap/change-password', methods=['POST'])
-def api_change_password():
-    data = request.get_json() or {}
-    res = orchestrator.change_ldap_password(data.get('mail'), data.get('new_password'))
-    return jsonify(res), 200 if res['success'] else 400
+    return render_template('login.html', 
+                           username=session['user_info'].get('username'),
+                           login_result=login_result)
 
 @app.route('/logout')
 def logout():

@@ -27,12 +27,12 @@ class WorkflowOrchestrator:
         return result
 
     def get_ldap_credentials(self, user_info):
-        return self.ldap_gen.generate_temporary_credentials(user_info)
+        return self.ldap_gen.issue_temporary_credentials(user_info)
 
     def test_ldap_login(self, username, password):
         try:
             server = Server(Config.LDAP_HOST, port=Config.LDAP_PORT, get_info=ALL)
-            bind_dn = f"uid={username},ou=people,{Config.LDAP_BASE_DN}"
+            bind_dn = f"uid={username},{Config.LDAP_BASE_DN}"
             
             conn = Connection(server, user=bind_dn, password=password, auto_bind=True)
             conn.unbind()
