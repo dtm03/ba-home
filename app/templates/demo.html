@@ -4,43 +4,37 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>LDAP Test Login</title>
+    <link rel="stylesheet" href="/static/style.css" />
   </head>
   <body>
-    <h1>LDAP Test Login</h1>
-    <p>Test your temporary credentials for {{ username }} ({{ email }})</p>
+    <div class="container">
+      <h1>LDAP Test Login</h1>
+      <p>Test your credentials for <strong>{{ username }}</strong></p>
 
-    {% if demo_result %} {% if demo_result.success %}
-    <p>{{ demo_result.message }}</p>
-    {% else %}
-    <p>{{ demo_result.error }}</p>
-    {% endif %} {% endif %}
-
-    <form method="post" action="{{ url_for('demo_test') }}">
-      <div style="margin-bottom: 12px">
-        <input
-          type="text"
-          id="username"
-          name="username"
-          placeholder="Enter username"
-          required
-        />
+      {% if demo_result %}
+      <div class="{{ 'success' if demo_result.success else 'error' }}">
+        {{ demo_result.message or demo_result.error }}
       </div>
+      {% endif %}
 
-      <div style="margin-bottom: 12px">
+      <form method="post" action="{{ url_for('demo_test') }}">
+        <input type="text" name="username" placeholder="Username" required />
         <input
           type="password"
-          id="password"
           name="password"
-          placeholder="Enter password"
+          placeholder="Password"
           required
         />
-      </div>
 
-      <div>
         <button type="submit">Login</button>
-        <a href="/credentials">Back to Credentials</a>
-        <a href="/logout">Logout</a>
+      </form>
+
+      <div style="margin-top: 15px">
+        <a href="/credentials" class="btn" style="background-color: #627d98"
+          >Back</a
+        >
+        <a href="/logout" class="btn btn-danger">Logout</a>
       </div>
-    </form>
+    </div>
   </body>
 </html>
